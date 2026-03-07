@@ -131,28 +131,36 @@ _TOTAL     = $(words $(_ALL_OBJS))
 _MAKE      = $(MAKE) --no-print-directory
 
 define init_progress
-@rm -f $(_PROGRESS); touch $(_PROGRESS); \
-_c=0; \
-for obj in $(_ALL_OBJS); do \
-    if [ -f "$$obj" ]; then \
-        _c=$$((_c + 1)); echo 1 >> $(_PROGRESS); \
-        _p=$$((_c * 100 / $(_TOTAL))); \
-        [ $$_p -gt 100 ] && _p=100; \
-        printf "[%3d%%] Built %s\n" $$_p "$$obj"; \
-    fi; \
-done
+  @rm -f $(_PROGRESS); touch $(_PROGRESS); \
+   _c=0; \
+   for obj in $(_ALL_OBJS); do \
+     if [ -f "$$obj" ]; then \
+       _c=$$((_c + 1)); echo 1 >> $(_PROGRESS); \
+       _p=$$((_c * 100 / $(_TOTAL))); \
+       [ $$_p -gt 100 ] && _p=100; \
+       printf "[%3d%%] Built %s\n" $$_p "$$obj"; \
+     fi; \
+   done
 endef
 
 define brief
-@echo 1 >> $(_PROGRESS); \
- _c=$$(wc -l < $(_PROGRESS)); \
- _p=$$((_c * 100 / $(_TOTAL))); \
- [ $$_p -gt 100 ] && _p=100; \
- printf "[%3d%%] $(C_GREEN)Building %s$(C_RESET)\n" $$_p $(1);
+  @echo 1 >> $(_PROGRESS); \
+   _c=$$(wc -l < $(_PROGRESS)); \
+   _p=$$((_c * 100 / $(_TOTAL))); \
+   [ $$_p -gt 100 ] && _p=100; \
+   printf "[%3d%%] $(C_GREEN)Building %s$(C_RESET)\n" $$_p $(1);
 endef
 
 define brief_ld
-@printf "[100%%] $(C_CYAN)Linking %s$(C_RESET)\n" $(1);
+  @printf "[100%%] $(C_CYAN)Linking %s$(C_RESET)\n" $(1);
+endef
+
+define print_success
+  @echo ""
+  @echo " ------------------------------------------------------"
+  @echo "           Multiwfn has been successfully built!       "
+  @echo " ------------------------------------------------------"
+  @echo ""
 endef
 
 # ==============================================================
@@ -187,8 +195,8 @@ ifeq ($(_IS_EXTRA),)
 endif
 
 define update_opts
-	@mkdir -p $(OBJDIR)
-	@echo $(_CURRENT_OPTS) > $(_OPTS_FILE)
+  @mkdir -p $(OBJDIR)
+  @echo $(_CURRENT_OPTS) > $(_OPTS_FILE)
 endef
 
 # ==============================================================
@@ -233,18 +241,17 @@ default: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_all
+	$(print_success)
 
 _build_all: $(objects)
 	@$(_MAKE) _build_noGUI
 	@$(_MAKE) _build_GUI
-	@echo " ------------------------------------------------------ "
-	@echo "          Multiwfn has been successfully built!"
-	@echo " ------------------------------------------------------ "
 
 noGUI: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_noGUI
+	$(print_success)
 
 _build_noGUI: $(objects) $(objects_noGUI) | $(EXEDIR)
 	$(call brief_ld,$(EXE_noGUI))
@@ -254,6 +261,7 @@ GUI: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_GUI
+	$(print_success)
 
 _build_GUI: $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o | $(EXEDIR)
 	$(call brief_ld,$(EXE))
