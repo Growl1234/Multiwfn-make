@@ -11,7 +11,7 @@
 # ==============================================================
 # 1. Compiler Auto-Detection
 # ==============================================================
-_EXTRA_TARGETS = clean cleanmultiwfn cleanlibreta help
+_EXTRA_TARGETS = help clean cleanmultiwfn cleanlibreta distclean
 _IS_EXTRA =
 ifneq ($(MAKECMDGOALS),)
   ifeq ($(filter-out $(_EXTRA_TARGETS),$(MAKECMDGOALS)),)
@@ -205,7 +205,7 @@ endef
 # ==============================================================
 # 5. Targets & Rules
 # ==============================================================
-.PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta all _build_noGUI _build_GUI help
+.PHONY: default all GUI noGUI help clean cleanmultiwfn cleanlibreta distclean _build_noGUI _build_GUI
 
 $(OBJDIR) $(EXEDIR):
 	@mkdir -p $@
@@ -218,9 +218,10 @@ help:
 	@echo "    make                 Build both GUI and noGUI (default)"
 	@echo "    make noGUI           Build noGUI version only"
 	@echo "    make GUI             Build GUI version only"
-	@echo "    make clean           Remove all build artefacts"
+	@echo "    make clean           Remove intermediate objects"
 	@echo "    make cleanmultiwfn   Clean Multiwfn objects (keep libreta)"
 	@echo "    make cleanlibreta    Clean libreta objects (keep Multiwfn)"
+	@echo "    make distclean       Remove all build artefacts and binaries"
 	@echo "    make help            Show this message"
 	@echo ""
 	@echo "  Options:"
@@ -277,7 +278,7 @@ _build_GUI: $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o | $(EXEDIR)
 	$(_v)$(FC) $(LDFLAGS) -o $(EXE) $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o $(LIB_GUI)
 
 clean:
-	$(_v)rm -rf $(OBJDIR) $(EXEDIR) $(_PROGRESS)
+	$(_v)rm -rf $(OBJDIR) $(_PROGRESS)
 
 # Only clean Multiwfn files, compiled libreta files are not affected
 _LIBRETA_OBJS = libreta.o ean.o hrr_012345.o blockhrr_012345.o \
@@ -290,14 +291,17 @@ cleanmultiwfn:
 	     done 2>/dev/null; true
 	$(_v)rm -f $(OBJDIR)/*.o $(OBJDIR)/*.mod
 	$(_v)mv $(OBJDIR)/_keep/* $(OBJDIR)/ 2>/dev/null; true
-	$(_v)rm -rf $(OBJDIR)/_keep $(EXEDIR) $(_PROGRESS)
+	$(_v)rm -rf $(OBJDIR)/_keep $(_PROGRESS)
 
 # Only clean libreta files, Multiwfn files are not affected
 cleanlibreta:
 	$(_v)for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
 	       rm -f $(OBJDIR)/$$f ; \
 	     done
-	$(_v)rm -rf $(EXEDIR) $(_PROGRESS)
+	$(_v)rm -rf $(_PROGRESS)
+
+distclean:
+	$(_v)rm -rf $(OBJDIR) $(EXEDIR) $(_PROGRESS)
 
 # --- Compilation Rules ---
 
