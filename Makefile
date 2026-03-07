@@ -2,7 +2,7 @@
 #
 # Usage:
 #   make -j24                 (Auto-detect compiler, generic SIMD)
-#   make TYPE=native -j24     (Optimized for current CPU)
+#   make ARCH=native -j24     (Optimized for current CPU)
 #   make V=1                  (Show full commands)
 #   make COMPILER=intel       (Force Intel compiler)
 
@@ -36,12 +36,12 @@ else
     ifeq ($(MAKELEVEL),0)
       $(info [COMPILER] Using Intel Fortran compiler)
     endif
-    include arch/makefile.include.intel
+    include config/makefile.include.intel
   else ifeq ($(COMPILER),gnu)
     ifeq ($(MAKELEVEL),0)
       $(info [COMPILER] Using GNU Fortran compiler)
     endif
-    include arch/makefile.include.gnu
+    include config/makefile.include.gnu
   else
     $(error Unknown COMPILER=$(COMPILER). Use 'gnu' or 'intel')
   endif
@@ -72,7 +72,10 @@ endif
 LIBRETAPATH = libreta_hybrid
 INCLUDE    += -I$(LIBRETAPATH) -I$(OBJDIR)
 OPT        += $(MODFLAG)
-OPT1       += $(MODFLAG)
+# When TYPE=Debug, OPT1 is directly set to OPT, causing -Jobj appears twice
+ifeq ($(TYPE),Release)
+  OPT1       += $(MODFLAG)
+endif
 BLOCKHRR_OPT += $(MODFLAG)
 
 # Executables
@@ -145,7 +148,43 @@ define brief_ld
 endef
 
 # ==============================================================
-# 4. Targets & Rules
+# 4. Build Consistency Check (Sentinel)
+# ==============================================================
+_OPTS_FILE = $(OBJDIR)/.build_opts
+_CURRENT_OPTS = "COMPILER=$(COMPILER) TYPE=$(TYPE) MATH=$(MATH) SIMD=$(SIMD)"
+translate = $(subst SIMD=-march=native,ARCH=native, \
+            $(subst SIMD=-msse3,ARCH=generic, \
+            $(1)))
+
+ifeq ($(_IS_EXTRA),)
+  ifneq ($(wildcard $(_OPTS_FILE)),)
+    _SAVED_OPTS := "$(shell cat $(_OPTS_FILE))"
+    ifneq ($(_CURRENT_OPTS),$(_SAVED_OPTS))
+      $(info ============================================================)
+      $(info ERROR: Configuration mismatch detected!)
+      $(info ============================================================)
+      $(info The current build directory '$(OBJDIR)' was initialized with:)
+      $(info $(call translate,$(_SAVED_OPTS)))
+      $(info )
+      $(info But you are now trying to build with:)
+      $(info $(call translate,$(_CURRENT_OPTS)))
+      $(info )
+      $(info To prevent inconsistent binary state, you MUST either:)
+      $(info 1. Switch back to previous options.)
+      $(info 2. Run 'make clean' to start a fresh build.)
+      $(info ============================================================)
+      $(error Build halted)
+    endif
+  endif
+endif
+
+define update_opts
+	@mkdir -p $(OBJDIR)
+	@echo $(_CURRENT_OPTS) > $(_OPTS_FILE)
+endef
+
+# ==============================================================
+# 5. Targets & Rules
 # ==============================================================
 .PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta _build_all _build_noGUI _build_GUI help
 
@@ -166,21 +205,24 @@ help:
 	@echo "    make help            Show this message"
 	@echo ""
 	@echo "  Options:"
-	@echo "    COMPILER=intel|gnu   Force compiler (default: auto-detect, Intel first)"
-	@echo "    TYPE=generic|native  SIMD instruction set (default: generic)"
-	@echo "    MATH=mkl|openblas    Math library, gfortran only (default: auto-detect, MKL first)"
+	@echo "    COMPILER=intel|gnu   Compiler (default: auto-detect, Intel first)"
+	@echo "    ARCH=generic|native  SIMD instruction set (default: generic)"
+	@echo "    MATH=mkl|openblas    Math library, gfortran only (default: auto-detect, MKL"
+	@echo "                         first); with ifort/ifx, only MKL could be used"
+	@echo "    TYPE=Release|Debug   Build type (default: Release)"
 	@echo "    V=1 / VERBOSE=1      Show full compiler commands during compilation"
 	@echo "    WITH_FD=1            Enable fractional-derivative support"
 	@echo "    OS=Ubuntu|RHEL       Select arb/flint layout (with WITH_FD=1)"
 	@echo ""
 	@echo "  Examples:"
 	@echo "    make -j\$$(nproc)"
-	@echo "    make COMPILER=gnu MATH=mkl TYPE=native -j\$$(nproc)"
+	@echo "    make COMPILER=gnu MATH=mkl ARCH=native -j\$$(nproc)"
 	@echo "    make noGUI V=1 -j8"
 	@echo "    make noGUI WITH_FD=1 OS=RHEL -j8"
 	@echo ""
 
 default: | $(OBJDIR) $(EXEDIR)
+	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_all
 
@@ -192,6 +234,7 @@ _build_all: $(objects)
 	@echo " ------------------------------------------------------ "
 
 noGUI: | $(OBJDIR) $(EXEDIR)
+	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_noGUI
 
@@ -200,6 +243,7 @@ _build_noGUI: $(objects) $(objects_noGUI) | $(EXEDIR)
 	$(_v)$(FC) $(LDFLAGS) -o $(EXE_noGUI) $(objects) $(objects_noGUI) $(LIB_noGUI)
 
 GUI: | $(OBJDIR) $(EXEDIR)
+	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_GUI
 

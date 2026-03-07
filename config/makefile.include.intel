@@ -20,21 +20,21 @@ endif
 CC = gcc
 
 # SIMD instruction set optimization
-# Usage: make TYPE=generic (default) or make TYPE=native
-TYPE ?= generic
+# Usage: make ARCH=generic (default) or make ARCH=native
+ARCH ?= generic
 
-ifeq ($(TYPE),generic)
+ifeq ($(ARCH),generic)
   SIMD = -msse3
   ifeq ($(MAKELEVEL),0)
     $(info [SIMD] Using generic SSE3 instructions (high compatibility))
   endif
-else ifeq ($(TYPE),native)
+else ifeq ($(ARCH),native)
   SIMD = -xHOST
   ifeq ($(MAKELEVEL),0)
     $(info [SIMD] Using native instructions (optimized for current CPU))
   endif
 else
-  $(error Unknown TYPE=$(TYPE). Supported values: generic, native)
+  $(error Unknown ARCH=$(ARCH). Supported values: generic, native)
 endif
 
 # Suppress Intel-specific diagnostics
@@ -53,13 +53,24 @@ INCLUDE = -I./ -I./ext
 COMMON = $(SIMD) $(DISDIAG) -fpscomp logicals -fpp \
          -mkl -static-intel -DINTEL_MKL -stand f08
 
-OPT  = -O2 -qopenmp -qopenmp-link=static -threads -qopt-matmul $(COMMON)
-OPT1 = -O1 -qopenmp -qopenmp-link=static -threads $(COMMON)
-
-# Debug build (uncomment to replace the two lines above)
-#OPT  = -O0 -qopenmp -qopenmp-link=static -threads $(COMMON) \
-#       -debug all -g -traceback -check all -fstack-protector
-#OPT1 = $(OPT)
+# Build type: Release, Debug
+TYPE ?= Release
+ifeq ($(TYPE),Release)
+  OPT  = -O2 -qopenmp -qopenmp-link=static -threads -qopt-matmul $(COMMON)
+  OPT1 = -O1 -qopenmp -qopenmp-link=static -threads $(COMMON)
+  ifeq ($(MAKELEVEL),0)
+    $(info [TYPE] Build type: Release)
+  endif
+else ifeq ($(TYPE),Debug)
+  OPT  = -O0 -qopenmp -qopenmp-link=static -threads $(COMMON) \
+         -debug all -g -traceback -check all -fstack-protector
+  OPT1 = $(OPT)
+  ifeq ($(MAKELEVEL),0)
+    $(info [TYPE] Build type: Debug)
+  endif
+else
+  $(error Unknown TYPE=$(TYPE). Supported values: Release, Debug)
+endif
 
 # Extra flags for .F fixed-form files (ifort auto-detects, nothing needed)
 FFLAGS_FIXED =
@@ -73,6 +84,11 @@ FFLAGS_XLIB = -fpscomp logicals
 
 # blockhrr_012345.f90 is a huge file; compile at -O1 to save time/memory
 BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD) $(INCLUDE)
+ifeq ($(TYPE),Release)
+  BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD) $(INCLUDE)
+else ifeq ($(TYPE),Debug)
+  BLOCKHRR_OPT = -O0 -debug all -g -traceback -check all -fstack-protector -diag-disable 6843 $(SIMD) $(INCLUDE)
+endif
 
 # Link flags (ifort handles static linking via -static-intel and -mkl)
 LDFLAGS = $(OPT)

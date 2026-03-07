@@ -13,21 +13,21 @@ FC = gfortran
 CC = gcc
 
 # SIMD instruction set optimization
-# Usage: make TYPE=generic (default) or make TYPE=native
-TYPE ?= generic
+# Usage: make ARCH=generic (default) or make ARCH=native
+ARCH ?= generic
 
-ifeq ($(TYPE),generic)
+ifeq ($(ARCH),generic)
   SIMD = -msse3
   ifeq ($(MAKELEVEL),0)
     $(info [SIMD] Using generic SSE3 instructions (high compatibility))
   endif
-else ifeq ($(TYPE),native)
+else ifeq ($(ARCH),native)
   SIMD = -march=native
   ifeq ($(MAKELEVEL),0)
     $(info [SIMD] Using native instructions (optimized for current CPU))
   endif
 else
-  $(error Unknown TYPE=$(TYPE). Supported values: generic, native)
+  $(error Unknown ARCH=$(ARCH). Supported values: generic, native)
 endif
 
 # Include search paths (Makefile will append LIBRETAPATH)
@@ -109,12 +109,23 @@ COMMON = -cpp -ffree-line-length-none -fopenmp \
          -fallow-argument-mismatch \
          $(SIMD) $(INCLUDE) $(MKL_DEF)
 
-OPT  = -O2 $(COMMON)
-OPT1 = -O1 $(COMMON)
-
-# Debug build (uncomment to replace the two lines above)
-#OPT  = -O0 -g -fbacktrace -fcheck=all -Wall -Wextra $(COMMON)
-#OPT1 = $(OPT)
+# Build type: Release, Debug
+TYPE ?= Release
+ifeq ($(TYPE),Release)
+  OPT  = -O2 $(COMMON)
+  OPT1 = -O1 $(COMMON)
+  ifeq ($(MAKELEVEL),0)
+    $(info [TYPE] Build type: Release)
+  endif
+else ifeq ($(TYPE),Debug)
+  OPT  = -O0 -g -fbacktrace -fcheck=all -Wall -Wextra $(COMMON)
+  OPT1 = $(OPT)
+  ifeq ($(MAKELEVEL),0)
+    $(info [TYPE] Build type: Debug)
+  endif
+else
+  $(error Unknown TYPE=$(TYPE). Supported values: Release, Debug)
+endif
 
 # Extra flags for .F fixed-form files (DFTxclib.F, Lebedev-Laikov.F, sym.F)
 #   -std=legacy : accept Fortran 77 syntax without errors
@@ -129,7 +140,11 @@ FFLAGS_DISLIN_EMPTY = -w
 FFLAGS_XLIB =
 
 # blockhrr_012345.f90 is a 3.5 MB file; compile at -O1 to save time/memory
-BLOCKHRR_OPT = -O1 -w $(SIMD) -ffree-line-length-none $(INCLUDE)
+ifeq ($(TYPE),Release)
+  BLOCKHRR_OPT = -O1 -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
+else ifeq ($(TYPE),Debug)
+  BLOCKHRR_OPT = -O0 -g1 -fbacktrace -fcheck=all -Wall -Wextra -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
+endif
 
 # Link flags -- full static build
 #   -static              : link everything statically
