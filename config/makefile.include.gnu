@@ -19,12 +19,12 @@ ARCH ?= generic
 ifeq ($(ARCH),generic)
   SIMD = -msse3
   ifeq ($(MAKELEVEL),0)
-    $(info [SIMD] Using generic SSE3 instructions (high compatibility))
+    $(info -- Using generic SSE3 instructions (high compatibility))
   endif
 else ifeq ($(ARCH),native)
   SIMD = -march=native
   ifeq ($(MAKELEVEL),0)
-    $(info [SIMD] Using native instructions (optimized for current CPU))
+    $(info -- Using native instructions (optimized for current CPU))
   endif
 else
   $(error Unknown ARCH=$(ARCH). Supported values: generic, native)
@@ -53,11 +53,11 @@ _OPENBLAS_STATIC_FILE = $(if $(OPENBLAS_ROOT),$(shell [ -f "$(OPENBLAS_ROOT)/lib
 ifeq ($(origin MATH),undefined)
   ifneq ($(_MKLROOT_OK),)
     MATH = mkl
-    $(info [MATH] Auto-detected Intel MKL at $(MKLROOT))
+    $(info -- Auto-detected Intel MKL at $(MKLROOT))
   else ifneq ($(_OPENBLAS_STATIC_FILE),)
     MATH = openblas
     _OPENBLAS_OK = yes
-    $(info [MATH] Auto-detected OpenBLAS at $(OPENBLAS_ROOT))
+    $(info -- Auto-detected OpenBLAS at $(OPENBLAS_ROOT))
   else ifneq ($(_OPENBLAS_DIR_OK),)
     $(error MKL is not found, and OpenBLAS is found but there's not a static library)
   else
@@ -115,13 +115,13 @@ ifeq ($(TYPE),Release)
   OPT  = -O2 $(COMMON)
   OPT1 = -O1 $(COMMON)
   ifeq ($(MAKELEVEL),0)
-    $(info [TYPE] Build type: Release)
+    $(info -- Build type: Release)
   endif
 else ifeq ($(TYPE),Debug)
   OPT  = -O0 -g -fbacktrace -fcheck=all -Wall -Wextra $(COMMON)
   OPT1 = $(OPT)
   ifeq ($(MAKELEVEL),0)
-    $(info [TYPE] Build type: Debug)
+    $(info -- Build type: Debug)
   endif
 else
   $(error Unknown TYPE=$(TYPE). Supported values: Release, Debug)

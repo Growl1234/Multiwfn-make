@@ -34,12 +34,12 @@ else
 
   ifeq ($(COMPILER),intel)
     ifeq ($(MAKELEVEL),0)
-      $(info [COMPILER] Using Intel Fortran compiler)
+      $(info -- Using Intel Fortran compiler)
     endif
     include config/makefile.include.intel
   else ifeq ($(COMPILER),gnu)
     ifeq ($(MAKELEVEL),0)
-      $(info [COMPILER] Using GNU Fortran compiler)
+      $(info -- Using GNU Fortran compiler)
     endif
     include config/makefile.include.gnu
   else
@@ -238,7 +238,7 @@ help:
 	@echo ""
 
 default: | $(OBJDIR) $(EXEDIR)
-	$(info [TARGET] Build target: default (all))
+	$(info -- Build target: default (all))
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) all
@@ -249,7 +249,7 @@ all: $(objects)
 	@$(_MAKE) _build_GUI
 
 noGUI: | $(OBJDIR) $(EXEDIR)
-	$(info [TARGET] Build target: noGUI)
+	$(info -- Build target: noGUI)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_noGUI
@@ -260,7 +260,7 @@ _build_noGUI: $(objects) $(objects_noGUI) | $(EXEDIR)
 	$(_v)$(FC) $(LDFLAGS) -o $(EXE_noGUI) $(objects) $(objects_noGUI) $(LIB_noGUI)
 
 GUI: | $(OBJDIR) $(EXEDIR)
-	$(info [TARGET] Build target: GUI)
+	$(info -- Build target: GUI)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_GUI

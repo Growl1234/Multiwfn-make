@@ -6,12 +6,12 @@ _IFX   := $(shell command -v ifx 2>/dev/null)
 ifneq ($(_IFORT),)
   FC = ifort
   ifeq ($(MAKELEVEL),0)
-    $(info [COMPILER] Auto-detected Intel Classic Fortran (ifort))
+    $(info -- Auto-detected Intel Classic Fortran (ifort))
   endif
 else ifneq ($(_IFX),)
   FC = ifx
   ifeq ($(MAKELEVEL),0)
-    $(info [COMPILER] Auto-detected Intel LLVM Fortran (ifx))
+    $(info -- Auto-detected Intel LLVM Fortran (ifx))
   endif
 else
   $(error "Neither ifort nor ifx found. Please load the Intel oneAPI environment first!")
@@ -26,12 +26,12 @@ ARCH ?= generic
 ifeq ($(ARCH),generic)
   SIMD = -msse3
   ifeq ($(MAKELEVEL),0)
-    $(info [SIMD] Using generic SSE3 instructions (high compatibility))
+    $(info -- Using generic SSE3 instructions (high compatibility))
   endif
 else ifeq ($(ARCH),native)
   SIMD = -xHOST
   ifeq ($(MAKELEVEL),0)
-    $(info [SIMD] Using native instructions (optimized for current CPU))
+    $(info -- Using native instructions (optimized for current CPU))
   endif
 else
   $(error Unknown ARCH=$(ARCH). Supported values: generic, native)
@@ -59,14 +59,14 @@ ifeq ($(TYPE),Release)
   OPT  = -O2 -qopenmp -qopenmp-link=static -threads -qopt-matmul $(COMMON)
   OPT1 = -O1 -qopenmp -qopenmp-link=static -threads $(COMMON)
   ifeq ($(MAKELEVEL),0)
-    $(info [TYPE] Build type: Release)
+    $(info -- Build type: Release)
   endif
 else ifeq ($(TYPE),Debug)
   OPT  = -O0 -qopenmp -qopenmp-link=static -threads $(COMMON) \
          -debug all -g -traceback -check all -fstack-protector
   OPT1 = $(OPT)
   ifeq ($(MAKELEVEL),0)
-    $(info [TYPE] Build type: Debug)
+    $(info -- Build type: Debug)
   endif
 else
   $(error Unknown TYPE=$(TYPE). Supported values: Release, Debug)
