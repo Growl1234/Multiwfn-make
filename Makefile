@@ -245,6 +245,7 @@ default: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) all
+	$(_v)cp settings.ini $(EXEDIR)
 	$(print_success)
 
 all: $(objects)
@@ -256,6 +257,7 @@ noGUI: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_noGUI
+	$(_v)cp settings.ini $(EXEDIR)
 	$(print_success)
 
 _build_noGUI: $(objects) $(objects_noGUI) | $(EXEDIR)
@@ -267,6 +269,7 @@ GUI: | $(OBJDIR) $(EXEDIR)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_GUI
+	$(_v)cp settings.ini $(EXEDIR)
 	$(print_success)
 
 _build_GUI: $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o | $(EXEDIR)
