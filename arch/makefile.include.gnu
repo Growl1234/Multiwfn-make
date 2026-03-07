@@ -1,9 +1,5 @@
 # makefile.include.gnu -- GNU Fortran compiler (gfortran)
 #
-# Copy or symlink to makefile.include before building:
-#   cp makefile.include.gnu makefile.include
-#   make -j$(nproc)
-#
 # Note: Please ensure libgfortran-static and glibc-static are installed on
 # your host system, or it gives error.
 #
@@ -95,7 +91,7 @@ ifeq ($(MATH),mkl)
   MKL_DEF    = -DINTEL_MKL
 else ifeq ($(MATH),openblas)
   # OpenBLAS provides both BLAS and LAPACK.
-  MATH_LINK  = -l:libopenblas.a
+  MATH_LINK  = -L$(OPENBLAS_ROOT)/lib -l:libopenblas.a
   MATH_EXTRA = -lm
   MKL_DEF    =
 else
@@ -143,13 +139,10 @@ BLOCKHRR_OPT = -O1 -w $(SIMD) -ffree-line-length-none $(INCLUDE)
 
 # Alternative: if static X11/GL/Motif libs are missing, use selective static
 # linking (only math libs and Fortran runtime are static, X11/GL stay dynamic):
-LDFLAGS = $(OPT) -static-libgfortran -static-libgcc \
-          -Wl,-Bstatic $(MATH_LINK) -Wl,-Bdynamic
+LDFLAGS = $(OPT) -static-libgfortran -static-libgcc
 
-# Libraries.
-# Only MATH_LINK and MATH_EXTRA go here; gfortran implicitly links -lm, -lgcc,
-# etc. via its own driver, so there is no need (and it is harmful with -static
-# on systems missing glibc-static) to list them again.
-LIB_base  = $(MATH_LINK) $(MATH_EXTRA)
+# Libraries
+# LIB_base  = $(MATH_LINK) $(MATH_EXTRA)
+LIB_base  = -Wl,-Bstatic $(MATH_LINK) -Wl,-Bdynamic $(MATH_EXTRA)
 LIB_GUI   = $(LIB_base) ./dislin_d-11.0.a -lXm -lXt -lX11 -lGL
 LIB_noGUI = $(LIB_base)

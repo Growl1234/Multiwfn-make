@@ -33,15 +33,15 @@ else
   COMPILER ?= $(_AUTO_COMPILER)
 
   ifeq ($(COMPILER),intel)
-    include arch/makefile.include.intel
     ifeq ($(MAKELEVEL),0)
       $(info [COMPILER] Using Intel Fortran compiler)
     endif
+    include arch/makefile.include.intel
   else ifeq ($(COMPILER),gnu)
-    include arch/makefile.include.gnu
     ifeq ($(MAKELEVEL),0)
       $(info [COMPILER] Using GNU Fortran compiler)
     endif
+    include arch/makefile.include.gnu
   else
     $(error Unknown COMPILER=$(COMPILER). Use 'gnu' or 'intel')
   endif
@@ -98,7 +98,12 @@ objects_noGUI = $(addprefix $(OBJDIR)/, dislin_d_empty.o mouse_rotate_empty.o)
 
 ifeq ($(WITH_FD),1)
   objects += $(OBJDIR)/2F2.c.o
-  LIB_base += -lflint -lflint-arb
+  ifeq ($(OS),Ubuntu) # for Ubuntu
+    LIB_base += -lflint -lflint-arb
+  else ifeq ($(OS),RHEL) # for Fedora, CentOS, RHEL
+    INCLUDE += -I/usr/include/arb
+    LIB_base += -lflint -larb
+  endif
 else
   objects += $(OBJDIR)/no2F2.c.o
 endif
@@ -176,6 +181,26 @@ _build_GUI: $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o | $(EXEDIR)
 
 clean:
 	@rm -rf $(OBJDIR) $(EXEDIR) $(_PROGRESS)
+
+# Only clean Multiwfn files, compiled libreta files are not affected
+_LIBRETA_OBJS = libreta.o ean.o hrr_012345.o blockhrr_012345.o \
+                eanvrr_012345.o boysfunc.o naiveeri.o ryspoly.o
+_LIBRETA_MODS = libreta.mod hrr.mod blockhrr.mod ean.mod eanvrr.mod boysfunc.mod
+cleanmultiwfn:
+	@mkdir -p $(OBJDIR)/_keep
+	@for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
+	    [ -f $(OBJDIR)/$$f ] && mv $(OBJDIR)/$$f $(OBJDIR)/_keep/ ; \
+	done 2>/dev/null; true
+	@rm -f $(OBJDIR)/*.o $(OBJDIR)/*.mod
+	@mv $(OBJDIR)/_keep/* $(OBJDIR)/ 2>/dev/null; true
+	@rm -rf $(OBJDIR)/_keep $(EXEDIR) $(_PROGRESS)
+
+# Only clean libreta files, Multiwfn files are not affected
+cleanlibreta:
+	@for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
+	    rm -f $(OBJDIR)/$$f ; \
+	done
+	@rm -rf $(EXEDIR) $(_PROGRESS)
 
 # --- Compilation Rules ---
 

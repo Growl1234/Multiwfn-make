@@ -1,25 +1,24 @@
 # makefile.include.intel -- Intel Fortran compiler (ifort / ifx)
-#
-# Copy or symlink to makefile.include before building:
-#   cp makefile.include.intel makefile.include
-#   make -j$(nproc)
 
 # Compilers
 _IFORT := $(shell command -v ifort 2>/dev/null)
 _IFX   := $(shell command -v ifx 2>/dev/null)
 ifneq ($(_IFORT),)
   FC = ifort
-  $(info [compiler] Auto-detected Intel Classic Fortran (ifort))
+  ifeq ($(MAKELEVEL),0)
+    $(info [COMPILER] Auto-detected Intel Classic Fortran (ifort))
+  endif
 else ifneq ($(_IFX),)
   FC = ifx
-  $(info [compiler] Auto-detected Intel LLVM Fortran (ifx))
+  ifeq ($(MAKELEVEL),0)
+    $(info [COMPILER] Auto-detected Intel LLVM Fortran (ifx))
+  endif
 else
   $(error "Neither ifort nor ifx found. Please load the Intel oneAPI environment first!")
 endif
 
 CC = gcc
 
-# SIMD instruction set
 # SIMD instruction set optimization
 # Usage: make TYPE=generic (default) or make TYPE=native
 TYPE ?= generic
@@ -73,7 +72,7 @@ FFLAGS_DISLIN_EMPTY = -diag-disable 6178,6843
 FFLAGS_XLIB = -fpscomp logicals
 
 # blockhrr_012345.f90 is a huge file; compile at -O1 to save time/memory
-BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD)
+BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD) $(INCLUDE)
 
 # Link flags (ifort handles static linking via -static-intel and -mkl)
 LDFLAGS = $(OPT)
