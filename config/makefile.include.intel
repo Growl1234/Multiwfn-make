@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # makefile.include.intel -- Intel Fortran compiler (ifort / ifx)
 
 # Compilers

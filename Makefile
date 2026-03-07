@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # Makefile for Multiwfn (http://sobereva.com/multiwfn/)
 #
 # Usage:

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # makefile.include.gnu -- GNU Fortran compiler (gfortran)
 #
 # Note: Please ensure libgfortran-static and glibc-static are installed on
