@@ -271,27 +271,27 @@ _build_GUI: $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o | $(EXEDIR)
 	$(_v)$(FC) $(LDFLAGS) -o $(EXE) $(objects) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o $(LIB_GUI)
 
 clean:
-	@rm -rf $(OBJDIR) $(EXEDIR) $(_PROGRESS)
+	$(_v)rm -rf $(OBJDIR) $(EXEDIR) $(_PROGRESS)
 
 # Only clean Multiwfn files, compiled libreta files are not affected
 _LIBRETA_OBJS = libreta.o ean.o hrr_012345.o blockhrr_012345.o \
                 eanvrr_012345.o boysfunc.o naiveeri.o ryspoly.o
 _LIBRETA_MODS = libreta.mod hrr.mod blockhrr.mod ean.mod eanvrr.mod boysfunc.mod
 cleanmultiwfn:
-	@mkdir -p $(OBJDIR)/_keep
-	@for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
-	    [ -f $(OBJDIR)/$$f ] && mv $(OBJDIR)/$$f $(OBJDIR)/_keep/ ; \
-	done 2>/dev/null; true
-	@rm -f $(OBJDIR)/*.o $(OBJDIR)/*.mod
-	@mv $(OBJDIR)/_keep/* $(OBJDIR)/ 2>/dev/null; true
-	@rm -rf $(OBJDIR)/_keep $(EXEDIR) $(_PROGRESS)
+	$(_v)mkdir -p $(OBJDIR)/_keep
+	$(_v)for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
+	       [ -f $(OBJDIR)/$$f ] && mv $(OBJDIR)/$$f $(OBJDIR)/_keep/ ; \
+	     done 2>/dev/null; true
+	$(_v)rm -f $(OBJDIR)/*.o $(OBJDIR)/*.mod
+	$(_v)mv $(OBJDIR)/_keep/* $(OBJDIR)/ 2>/dev/null; true
+	$(_v)rm -rf $(OBJDIR)/_keep $(EXEDIR) $(_PROGRESS)
 
 # Only clean libreta files, Multiwfn files are not affected
 cleanlibreta:
-	@for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
-	    rm -f $(OBJDIR)/$$f ; \
-	done
-	@rm -rf $(EXEDIR) $(_PROGRESS)
+	$(_v)for f in $(_LIBRETA_OBJS) $(_LIBRETA_MODS); do \
+	       rm -f $(OBJDIR)/$$f ; \
+	     done
+	$(_v)rm -rf $(EXEDIR) $(_PROGRESS)
 
 # --- Compilation Rules ---
 
