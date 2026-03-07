@@ -9,15 +9,15 @@
 # ==============================================================
 # 1. Compiler Auto-Detection
 # ==============================================================
-_CLEAN_TARGETS = clean cleanmultiwfn cleanlibreta
-_IS_CLEAN =
+_EXTRA_TARGETS = clean cleanmultiwfn cleanlibreta help
+_IS_EXTRA =
 ifneq ($(MAKECMDGOALS),)
-  ifeq ($(filter-out $(_CLEAN_TARGETS),$(MAKECMDGOALS)),)
-    _IS_CLEAN = yes
+  ifeq ($(filter-out $(_EXTRA_TARGETS),$(MAKECMDGOALS)),)
+    _IS_EXTRA = yes
   endif
 endif
 
-ifeq ($(_IS_CLEAN),yes)
+ifeq ($(_IS_EXTRA),yes)
   COMPILER = skip_for_clean
 else
   _HAS_IFORT := $(shell command -v ifort 2>/dev/null)
@@ -147,10 +147,38 @@ endef
 # ==============================================================
 # 4. Targets & Rules
 # ==============================================================
-.PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta _build_all _build_noGUI _build_GUI
+.PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta _build_all _build_noGUI _build_GUI help
 
 $(OBJDIR) $(EXEDIR):
 	@mkdir -p $@
+
+help:
+	@echo ""
+	@echo "  Multiwfn Build System"
+	@echo ""
+	@echo "  Targets:"
+	@echo "    make                 Build both GUI and noGUI (default)"
+	@echo "    make noGUI           Build noGUI version only"
+	@echo "    make GUI             Build GUI version only"
+	@echo "    make clean           Remove all build artefacts"
+	@echo "    make cleanmultiwfn   Clean Multiwfn objects (keep libreta)"
+	@echo "    make cleanlibreta    Clean libreta objects (keep Multiwfn)"
+	@echo "    make help            Show this message"
+	@echo ""
+	@echo "  Options:"
+	@echo "    COMPILER=intel|gnu   Force compiler (default: auto-detect, Intel first)"
+	@echo "    TYPE=generic|native  SIMD instruction set (default: generic)"
+	@echo "    MATH=mkl|openblas    Math library, gfortran only (default: auto-detect, MKL first)"
+	@echo "    V=1 / VERBOSE=1      Show full compiler commands during compilation"
+	@echo "    WITH_FD=1            Enable fractional-derivative support"
+	@echo "    OS=Ubuntu|RHEL       Select arb/flint layout (with WITH_FD=1)"
+	@echo ""
+	@echo "  Examples:"
+	@echo "    make -j\$$(nproc)"
+	@echo "    make COMPILER=gnu MATH=mkl TYPE=native -j\$$(nproc)"
+	@echo "    make noGUI V=1 -j8"
+	@echo "    make noGUI WITH_FD=1 OS=RHEL -j8"
+	@echo ""
 
 default: | $(OBJDIR) $(EXEDIR)
 	$(init_progress)
