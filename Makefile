@@ -202,7 +202,7 @@ endef
 # ==============================================================
 # 5. Targets & Rules
 # ==============================================================
-.PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta _build_all _build_noGUI _build_GUI help
+.PHONY: default GUI noGUI clean cleanmultiwfn cleanlibreta all _build_noGUI _build_GUI help
 
 $(OBJDIR) $(EXEDIR):
 	@mkdir -p $@
@@ -238,16 +238,18 @@ help:
 	@echo ""
 
 default: | $(OBJDIR) $(EXEDIR)
+	$(info [TARGET] Build target: default (all))
 	$(update_opts)
 	$(init_progress)
-	@$(_MAKE) _build_all
+	@$(_MAKE) all
 	$(print_success)
 
-_build_all: $(objects)
+all: $(objects)
 	@$(_MAKE) _build_noGUI
 	@$(_MAKE) _build_GUI
 
 noGUI: | $(OBJDIR) $(EXEDIR)
+	$(info [TARGET] Build target: noGUI)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_noGUI
@@ -258,6 +260,7 @@ _build_noGUI: $(objects) $(objects_noGUI) | $(EXEDIR)
 	$(_v)$(FC) $(LDFLAGS) -o $(EXE_noGUI) $(objects) $(objects_noGUI) $(LIB_noGUI)
 
 GUI: | $(OBJDIR) $(EXEDIR)
+	$(info [TARGET] Build target: GUI)
 	$(update_opts)
 	$(init_progress)
 	@$(_MAKE) _build_GUI
