@@ -113,9 +113,17 @@ endif
 
 modules = $(addprefix $(OBJDIR)/, define.o util.o function.o plot.o GUI.o libreta.o 2F2.f90.o)
 
-C_GREEN = \033[1;32m
-C_CYAN  = \033[1;36m
-C_RESET = \033[0m
+# Avoid garbage control sequences in the log files
+_IS_TTY := $(if $(MAKE_TERMOUT),yes)
+ifeq ($(_IS_TTY),yes)
+  C_GREEN  = \033[1;32m
+  C_CYAN   = \033[1;36m
+  C_RESET  = \033[0m
+else
+  C_GREEN  =
+  C_CYAN   =
+  C_RESET  =
+endif
 
 _PROGRESS := .build_progress
 _ALL_OBJS  = $(OBJDIR)/dislin_d.o $(objects) $(objects_noGUI) $(OBJDIR)/mouse_rotate.o $(OBJDIR)/xlib.o
