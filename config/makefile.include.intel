@@ -85,7 +85,6 @@ FFLAGS_DISLIN_EMPTY = -diag-disable 6178,6843
 FFLAGS_XLIB = -fpscomp logicals
 
 # blockhrr_012345.f90 is a huge file; compile at -O1 to save time/memory
-BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD) $(INCLUDE)
 ifeq ($(TYPE),Release)
   BLOCKHRR_OPT = -O1 -diag-disable 6843 $(SIMD) $(INCLUDE)
 else ifeq ($(TYPE),Debug)

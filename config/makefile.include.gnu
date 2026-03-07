@@ -145,7 +145,7 @@ FFLAGS_XLIB =
 ifeq ($(TYPE),Release)
   BLOCKHRR_OPT = -O1 -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
 else ifeq ($(TYPE),Debug)
-  BLOCKHRR_OPT = -O0 -g1 -fbacktrace -fcheck=all -Wall -Wextra -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
+  BLOCKHRR_OPT = -O0 -g1 -fbacktrace -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
 endif
 
 # Link flags -- full static build

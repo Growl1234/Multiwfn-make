@@ -171,8 +171,9 @@ endef
 _OPTS_FILE = $(OBJDIR)/.build_opts
 _CURRENT_OPTS = "COMPILER=$(COMPILER) TYPE=$(TYPE) MATH=$(MATH) SIMD=$(SIMD)"
 translate = $(subst SIMD=-march=native,ARCH=native, \
+            $(subst SIMD=-xHOST,ARCH=native, \
             $(subst SIMD=-msse3,ARCH=generic, \
-            $(1)))
+            $(1))))
 
 ifeq ($(_IS_EXTRA),)
   ifneq ($(wildcard $(_OPTS_FILE)),)

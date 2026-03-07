@@ -6,7 +6,7 @@ This repository will be kept up to date with new Multiwfn releases. It is curren
 
 ## How to Use
 
-1. Copy `Makefile` and `arch` directory to the path of Multiwfn source code.
+1. Copy `Makefile` and `config` directory to the path of Multiwfn source code.
 2. Run `make -jN` directly.
 
 For extra options available, run `make help` to see details.
@@ -22,7 +22,7 @@ For extra options available, run `make help` to see details.
 
 ## 中文说明
 
-这里是我自己尝试性为[Multiwfn](http://sobereva.com/multiwfn/)程序做的一个Makefile系统，包含主Makefile和arch目录下的两个makefile.include，分别使用gfortran和ifort/ifx编译器。这一尝试旨在使得Multiwfn能够顺利利用gfortran进行编译。如果你想尝试利用这里的Makefile自行编译Multiwfn，直接将Makefile和arch目录复制到源代码目录下，然后运行`make -jN`即可。具体可用选项可以通过`make help`看到。
+这里是我自己尝试性为[Multiwfn](http://sobereva.com/multiwfn/)程序做的一个Makefile系统，包含主Makefile和arch目录下的两个makefile.include，分别使用gfortran和ifort/ifx编译器。这一尝试旨在使得Multiwfn能够顺利利用gfortran进行编译。如果你想尝试利用这里的Makefile自行编译Multiwfn，直接将Makefile和config目录复制到源代码目录下，然后运行`make -jN`即可。具体可用选项可以通过`make help`看到。
 
 关于`make`的具体使用，有以下几点：
 1. Makefile默认自动检测编译器，规则如下：如果存在Intel Fortran编译器，优先使用Intel的；如果同时存在ifort和ifx（较老版本的oneAPI），优先使用ifort；如果不存在Intel编译器，则使用gfortran。你也可以通过在`make`命令后添加`COMPILER=gnu`或`COMPILER=intel`强行指定你想要的编译器。请注意，由于原本开发者提供的的Makefile使用GCC作C编译器、ifort作Fortran编译器，因此`makefile.include.intel`中仍然使用了gcc（本人不喜欢Intel编译器，因此也没有对icx/icc的情况做任何测试）。
