@@ -1,0 +1,174 @@
+# SPDX-License-Identifier: MIT
+name: Build Multiwfn
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Change this URL to match the Multiwfn source/binary package you want to test against.
+  # The binary Linux package from sobereva.com includes the source tree.
+  MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.2.2_src_Linux.zip"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: "docker.io/rockylinux/rockylinux:10"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ifort
+            compiler: intel
+            fc: ifort
+          - name: ifx
+            compiler: intel
+            fc: ifx
+          - name: gfortran + MKL
+            compiler: gnu
+            math: mkl
+          - name: gfortran + OpenBLAS
+            compiler: gnu
+            math: openblas
+
+    name: ${{ matrix.name }}
+
+    steps:
+
+    # -- Setup --
+
+    - name: Install base tools
+      run: |
+        for i in 1 2 3 4 5; do
+          dnf makecache && break
+          echo "Attempt $i failed, retrying in 10s..."
+          sleep 10
+        done
+        dnf install -y dnf-plugins-core
+        dnf group install -y "Development Tools"
+        dnf group install -y "Legacy UNIX Compatibility"
+        dnf group install -y "Graphical Administration Tools"
+        dnf group install -y "System Tools"
+        dnf install -y epel-release
+        dnf config-manager --set-enabled crb
+        dnf install -y git unzip wget make gcc findutils
+
+    - name: Checkout build system
+      uses: actions/checkout@v4
+
+    - name: Download source and settings
+      run: |
+        wget "$MULTIWFN_SRC_URL" -O /tmp/multiwfn.zip
+        unzip /tmp/multiwfn.zip -d /tmp/multiwfn-extract
+        # Locate the source tree by finding a known file
+        SRC_DIR=$(find /tmp/multiwfn-extract -name "define.f90" -printf "%h\n" | head -1)
+        if [ -z "$SRC_DIR" ]; then
+          echo "::error::Could not find Multiwfn source (define.f90) in the archive"
+          exit 1
+        fi
+        echo "Found source at: $SRC_DIR"
+        echo "SRC=$SRC_DIR" >> "$GITHUB_ENV"
+
+    - name: Copy build system into source tree
+      run: |
+        cp Makefile "$SRC/"
+        cp -r config "$SRC/"
+
+    # -- Compiler & math library installation --
+
+    - name: Install Intel oneAPI (compiler + MKL)
+      if: matrix.compiler == 'intel'
+      run: |
+        for i in 1 2 3 4 5; do
+          rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && break
+          echo "Attempt $i failed, retrying in 10s..."
+          sleep 10
+        done
+        dnf config-manager --add-repo https://yum.repos.intel.com/oneapi
+        if [ "${{ matrix.fc }}" = "ifort" ]; then
+          # 2024.2.1 is the last version shipping ifort
+          dnf install -y intel-oneapi-compiler-fortran-2024.2.1 intel-oneapi-mkl-devel-2024.2.1
+        else
+          dnf install -y intel-oneapi-compiler-fortran intel-oneapi-mkl-devel
+        fi
+
+    - name: Install gfortran
+      if: matrix.compiler == 'gnu'
+      run: |
+        dnf config-manager --set-enabled crb
+        dnf install -y gcc-gfortran libgfortran-static glibc-static
+
+    - name: Install MKL (for gfortran)
+      if: matrix.compiler == 'gnu' && matrix.math == 'mkl'
+      run: |
+        rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        dnf config-manager --add-repo https://yum.repos.intel.com/oneapi
+        dnf install -y intel-oneapi-mkl-devel
+
+    - name: Install OpenBLAS
+      if: matrix.math == 'openblas'
+      run: |
+        dnf install -y openblas-devel openblas-static
+        # The Makefile expects $(OPENBLAS_ROOT)/lib/libopenblas.a
+        # but Rocky 10 puts it at /usr/lib64/libopenblas.a
+        mkdir -p /opt/openblas/lib
+        ln -s /usr/lib64/libopenblas.a /opt/openblas/lib/libopenblas.a
+        echo "OPENBLAS_ROOT=/opt/openblas" >> "$GITHUB_ENV"
+
+    - name: Install GUI libraries (Motif, X11, GL)
+      run: |
+        dnf install -y motif-devel libXt-devel libX11-devel mesa-libGL-devel mesa-libGLU-devel
+
+    # -- Build --
+
+    - name: Source Intel environment
+      if: matrix.compiler == 'intel' || matrix.math == 'mkl'
+      shell: bash
+      run: |
+        # Persist Intel environment variables across subsequent steps.
+        # setvars.sh (full compiler) or mkl/env/vars.sh (MKL only).
+        if [ -f /opt/intel/oneapi/setvars.sh ]; then
+          source /opt/intel/oneapi/setvars.sh --force > /dev/null 2>&1
+        fi
+        
+        # Dump to GITHUB_ENV
+        echo "PATH=$PATH"             >> "$GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
+        echo "MKLROOT=$MKLROOT"       >> "$GITHUB_ENV"
+        echo "ONEAPI_ROOT=$ONEAPI_ROOT" >> "$GITHUB_ENV"
+        echo "LIBRARY_PATH=$LIBRARY_PATH" >> "$GITHUB_ENV"
+        echo "CPATH=$CPATH"           >> "$GITHUB_ENV"
+        echo "TBBROOT=$TBBROOT"       >> "$GITHUB_ENV"
+
+        # Verify compiler
+        if [ "${{ matrix.compiler }}" = "intel" ]; then
+          echo "FC = $(command -v ${{ matrix.fc }} 2>/dev/null || echo 'not found')"
+        else
+          echo "FC = $(command -v gfortran)"
+          echo "MKLROOT = $MKLROOT"
+        fi
+
+    - name: Build
+      run: |
+        cd "$SRC"
+        make V=1 -j$(nproc)
+
+    # -- Test --
+
+    - name: Test Multiwfn_noGUI
+      run: |
+        cp test/{test-1.xyz,test-2.cif} $SRC/exe
+        cd "$SRC"/exe
+        ./Multiwfn_noGUI test-1.xyz <<< "q"
+        ./Multiwfn_noGUI test-2.cif <<< "q"
+
+    - name: Test Multiwfn
+      run: |
+        cp test/{test-1.xyz,test-2.cif} $SRC/exe
+        cd "$SRC"/exe
+        ./Multiwfn test-1.xyz <<< "q"
+        ./Multiwfn test-2.cif <<< "q"
+
