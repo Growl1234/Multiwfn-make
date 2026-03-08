@@ -160,14 +160,14 @@ jobs:
 
     - name: Test Multiwfn_noGUI
       run: |
-        cp test/{test-1.xyz,test-2.cif} $SRC/exe
+        cp tests/{test-1.xyz,test-2.cif} $SRC/exe
         cd "$SRC"/exe
         ./Multiwfn_noGUI test-1.xyz <<< "q"
         ./Multiwfn_noGUI test-2.cif <<< "q"
 
     - name: Test Multiwfn
       run: |
-        cp test/{test-1.xyz,test-2.cif} $SRC/exe
+        cp tests/{test-1.xyz,test-2.cif} $SRC/exe
         cd "$SRC"/exe
         ./Multiwfn test-1.xyz <<< "q"
         ./Multiwfn test-2.cif <<< "q"

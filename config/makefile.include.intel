@@ -53,7 +53,7 @@ INCLUDE = -I./ -I./ext
 #   -qopenmp-link=static : statically link OpenMP runtime
 #   -stand f08        : warn on non-F2008 constructs
 COMMON = $(SIMD) $(DISDIAG) -fpscomp logicals -fpp \
-         -mkl -static-intel -DINTEL_MKL -stand f08
+         -qmkl -static-intel -DINTEL_MKL -stand f08
 
 # Build type: Release, Debug
 TYPE ?= Release
