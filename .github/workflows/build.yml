@@ -2,8 +2,6 @@
 name: Build Multiwfn
 
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -104,7 +102,11 @@ jobs:
     - name: Install MKL (for gfortran)
       if: matrix.compiler == 'gnu' && matrix.math == 'mkl'
       run: |
-        rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        for i in 1 2 3 4 5; do
+          rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && break
+          echo "Attempt $i failed, retrying in 10s..."
+          sleep 10
+        done
         dnf config-manager --add-repo https://yum.repos.intel.com/oneapi
         dnf install -y intel-oneapi-mkl-devel
 
