@@ -116,8 +116,8 @@ COMMON = -cpp -ffree-line-length-none -fopenmp \
 # Build type: Release, Debug
 TYPE ?= Release
 ifeq ($(TYPE),Release)
-  OPT  = -O2 $(COMMON)
-  OPT1 = -O1 $(COMMON)
+  OPT  = -O2 -g1 $(COMMON)
+  OPT1 = -O1 -g1 $(COMMON)
   ifeq ($(MAKELEVEL),0)
     $(info -- Build type: Release)
   endif
@@ -145,7 +145,7 @@ FFLAGS_XLIB =
 
 # blockhrr_012345.f90 is a 3.5 MB file; compile at -O1 to save time/memory
 ifeq ($(TYPE),Release)
-  BLOCKHRR_OPT = -O1 -w $(SIMD) -fbacktrace -ffree-line-length-none -fno-var-tracking -ffpe-summary=none $(INCLUDE)
+  BLOCKHRR_OPT = -O1 -g1 -w $(SIMD) -fbacktrace -ffree-line-length-none -fno-var-tracking -ffpe-summary=none $(INCLUDE)
 else ifeq ($(TYPE),Debug)
   BLOCKHRR_OPT = -O0 -g1 -w $(SIMD) -fbacktrace -ffree-line-length-none -fno-var-tracking -ffpe-summary=none $(INCLUDE)
 endif
