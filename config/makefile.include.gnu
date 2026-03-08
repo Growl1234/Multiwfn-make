@@ -109,6 +109,8 @@ endif # _NEED_MATH
 #   -fallow-argument-mismatch : needed for KROUT and other legacy routines
 COMMON = -cpp -ffree-line-length-none -fopenmp \
          -fallow-argument-mismatch \
+         -fbacktrace \
+         -ffpe-summary=none \
          $(SIMD) $(INCLUDE) $(MKL_DEF)
 
 # Build type: Release, Debug
@@ -120,7 +122,7 @@ ifeq ($(TYPE),Release)
     $(info -- Build type: Release)
   endif
 else ifeq ($(TYPE),Debug)
-  OPT  = -O0 -g -fbacktrace -fcheck=all -Wall -Wextra $(COMMON)
+  OPT  = -O0 -g -fcheck=all -Wall -Wextra $(COMMON)
   OPT1 = $(OPT)
   ifeq ($(MAKELEVEL),0)
     $(info -- Build type: Debug)
@@ -143,9 +145,9 @@ FFLAGS_XLIB =
 
 # blockhrr_012345.f90 is a 3.5 MB file; compile at -O1 to save time/memory
 ifeq ($(TYPE),Release)
-  BLOCKHRR_OPT = -O1 -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
+  BLOCKHRR_OPT = -O1 -w $(SIMD) -fbacktrace -ffree-line-length-none -fno-var-tracking -ffpe-summary=none $(INCLUDE)
 else ifeq ($(TYPE),Debug)
-  BLOCKHRR_OPT = -O0 -g1 -fbacktrace -w $(SIMD) -ffree-line-length-none -fno-var-tracking $(INCLUDE)
+  BLOCKHRR_OPT = -O0 -g1 -w $(SIMD) -fbacktrace -ffree-line-length-none -fno-var-tracking -ffpe-summary=none $(INCLUDE)
 endif
 
 # Link flags -- full static build
