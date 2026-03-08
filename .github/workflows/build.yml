@@ -15,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     container: "docker.io/rockylinux/rockylinux:10"
 
+    defaults:
+      run:
+        shell: bash
+
     strategy:
       fail-fast: false
       matrix:
@@ -128,7 +132,6 @@ jobs:
 
     - name: Source Intel environment
       if: matrix.compiler == 'intel' || matrix.math == 'mkl'
-      shell: bash
       run: |
         # Persist Intel environment variables across subsequent steps.
         # setvars.sh (full compiler) or mkl/env/vars.sh (MKL only).
