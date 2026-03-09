@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  # Change this URL to match the Multiwfn source/binary package you want to test against.
-  # The binary Linux package from sobereva.com includes the source tree.
+  # Change this URL to match the Multiwfn source package to test against.
   MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.2.2_src_Linux.zip"
 
 jobs:
