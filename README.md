@@ -2,7 +2,7 @@
 
 Self-made Makefile and makefile.include.* for [Multiwfn](http://sobereva.com/multiwfn/) which enable compiling on Linux with GNU or Intel Fortran compilers.
 
-This repository will be kept up to date with new Multiwfn releases. It is currently compatible with version 2026.3.27.
+This repository will be kept up to date with new Multiwfn releases. It is currently compatible with version 2026.4.10.
 
 ## How to Use
 
