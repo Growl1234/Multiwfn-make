@@ -22,11 +22,8 @@ endif
 ifeq ($(_IS_EXTRA),yes)
   COMPILER = skip_for_clean
 else
-  _HAS_IFORT := $(shell command -v ifort 2>/dev/null)
-  _HAS_IFX   := $(shell command -v ifx 2>/dev/null)
-  ifneq ($(_HAS_IFORT),)
-    _AUTO_COMPILER := intel
-  else ifneq ($(_HAS_IFX),)
+  _HAS_INTEL   := $(shell command -v ifx 2>/dev/null)
+  ifneq ($(_HAS_INTEL),)
     _AUTO_COMPILER := intel
   else
     _AUTO_COMPILER := gnu
@@ -228,7 +225,7 @@ help:
 	@echo "    COMPILER=intel|gnu   Compiler (default: auto-detect, Intel first)"
 	@echo "    ARCH=generic|native  SIMD instruction set (default: generic)"
 	@echo "    MATH=mkl|openblas    Math library, gfortran only (default: auto-detect, MKL"
-	@echo "                         first); with ifort/ifx, only MKL could be used"
+	@echo "                         first); with ifx, only MKL could be used"
 	@echo "    TYPE=Release|Debug   Build type (default: Release)"
 	@echo "    V=1 / VERBOSE=1      Show full compiler commands during compilation"
 	@echo "    WITH_FD=1            Enable fractional-derivative support"

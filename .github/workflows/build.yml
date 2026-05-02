@@ -22,18 +22,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: ifort
-            compiler: intel
-            fc: ifort
-          - name: ifx
-            compiler: intel
-            fc: ifx
           - name: gfortran + MKL
             compiler: gnu
             math: mkl
           - name: gfortran + OpenBLAS
             compiler: gnu
             math: openblas
+          - name: ifx
+            compiler: intel
+            fc: ifx
 
     name: ${{ matrix.name }}
 
@@ -48,11 +45,9 @@ jobs:
           echo "Attempt $i failed, retrying in 10s..."
           sleep 10
         done
+        dnf update -y
         dnf install -y dnf-plugins-core
-        dnf group install -y "Development Tools"
-        dnf group install -y "Legacy UNIX Compatibility"
-        dnf group install -y "Graphical Administration Tools"
-        dnf group install -y "System Tools"
+        dnf group install -y "Development Tools" "System Tools"
         dnf install -y epel-release
         dnf config-manager --set-enabled crb
         dnf install -y git unzip wget make gcc findutils
@@ -89,12 +84,7 @@ jobs:
           sleep 10
         done
         dnf config-manager --add-repo https://yum.repos.intel.com/oneapi
-        if [ "${{ matrix.fc }}" = "ifort" ]; then
-          # 2024.2.1 is the last version shipping ifort
-          dnf install -y intel-oneapi-compiler-fortran-2024.2.1 intel-oneapi-mkl-devel-2024.2.1
-        else
-          dnf install -y intel-oneapi-compiler-fortran intel-oneapi-mkl-devel
-        fi
+        dnf install -y intel-oneapi-toolkit
 
     - name: Install gfortran
       if: matrix.compiler == 'gnu'

@@ -1,25 +1,10 @@
 # SPDX-License-Identifier: MIT
 
-# makefile.include.intel -- Intel Fortran compiler (ifort / ifx)
+# makefile.include.intel -- Intel Fortran compiler
 
 # Compilers
-_IFORT := $(shell command -v ifort 2>/dev/null)
-_IFX   := $(shell command -v ifx 2>/dev/null)
-ifneq ($(_IFORT),)
-  FC = ifort
-  ifeq ($(MAKELEVEL),0)
-    $(info -- Auto-detected Intel Classic Fortran (ifort))
-  endif
-else ifneq ($(_IFX),)
-  FC = ifx
-  ifeq ($(MAKELEVEL),0)
-    $(info -- Auto-detected Intel LLVM Fortran (ifx))
-  endif
-else
-  $(error "Neither ifort nor ifx found. Please load the Intel oneAPI environment first!")
-endif
-
-CC = gcc
+FC = ifx
+CC = icx
 
 # SIMD instruction set optimization
 # Usage: make ARCH=generic (default) or make ARCH=native
@@ -74,7 +59,7 @@ else
   $(error Unknown TYPE=$(TYPE). Supported values: Release, Debug)
 endif
 
-# Extra flags for .F fixed-form files (ifort auto-detects, nothing needed)
+# Extra flags for .F fixed-form files
 FFLAGS_FIXED =
 
 # Warning suppression for third-party code (libreta, dislin stubs, etc.)
@@ -91,7 +76,7 @@ else ifeq ($(TYPE),Debug)
   BLOCKHRR_OPT = -O0 -debug all -g -traceback -check all -fstack-protector -diag-disable 6843 $(SIMD) $(INCLUDE)
 endif
 
-# Link flags (ifort handles static linking via -static-intel and -mkl)
+# Link flags
 LDFLAGS = $(OPT)
 
 # Libraries
