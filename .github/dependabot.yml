@@ -7,8 +7,6 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "ci"
-      - "dependencies"
       - "github-actions"
     commit-message:
       prefix: "ci"
