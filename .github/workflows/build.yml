@@ -58,7 +58,7 @@ jobs:
         dnf install -y git unzip wget make gcc findutils
 
     - name: Checkout build system
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Download source and settings
       run: |
