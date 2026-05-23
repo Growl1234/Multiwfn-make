@@ -169,7 +169,7 @@ _OPTS_FILE = $(OBJDIR)/.build_opts
 _CURRENT_OPTS = "COMPILER=$(COMPILER) TYPE=$(TYPE) MATH=$(MATH) SIMD=$(SIMD)"
 translate = $(subst SIMD=-march=native,ARCH=native, \
             $(subst SIMD=-xHOST,ARCH=native, \
-            $(subst SIMD=-msse3,ARCH=generic, \
+            $(subst SIMD=-msse4.2,ARCH=generic, \
             $(1))))
 
 ifeq ($(_IS_EXTRA),)
