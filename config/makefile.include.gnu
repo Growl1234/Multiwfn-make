@@ -19,9 +19,9 @@ CC = gcc
 ARCH ?= generic
 
 ifeq ($(ARCH),generic)
-  SIMD = -msse3
+  SIMD = -msse4.2
   ifeq ($(MAKELEVEL),0)
-    $(info -- Using generic SSE3 instructions (high compatibility))
+    $(info -- Using generic SSE4.2 instructions (high compatibility))
   endif
 else ifeq ($(ARCH),native)
   SIMD = -march=native
