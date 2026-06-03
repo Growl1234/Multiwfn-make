@@ -7,7 +7,7 @@ on:
 
 env:
   # Change this URL to match the Multiwfn source package to test against.
-  MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.4.10_src_Linux.zip"
+  MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.6.2_src_Linux.zip"
 
 jobs:
   build:
