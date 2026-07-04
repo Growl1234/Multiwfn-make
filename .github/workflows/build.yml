@@ -7,7 +7,7 @@ on:
 
 env:
   # Change this URL to match the Multiwfn source package to test against.
-  MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.6.2_src_Linux.zip"
+  MULTIWFN_SRC_URL: "http://sobereva.com/multiwfn/misc/Multiwfn_2026.7.3_src_Linux.zip"
 
 jobs:
   build:
@@ -22,13 +22,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: gfortran + MKL
+          - name: GNU + MKL
             compiler: gnu
             math: mkl
-          - name: gfortran + OpenBLAS
+          - name: GNU + OpenBLAS
             compiler: gnu
             math: openblas
-          - name: ifx
+          - name: Intel
             compiler: intel
             fc: ifx
 
